@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>RizzReply — Paste the dead chat. Get the reply that lands.</title>
+<meta name="description" content="Your AI dating wingman. Drop any conversation, get replies that actually get a response, in seconds." />
+<!-- Open Graph (for the TikTok link-in-bio preview) -->
+<meta property="og:title" content="RizzReply — Get the reply that lands" />
+<meta property="og:description" content="Paste a dead chat, get three replies that get a response. Launching on the App Store soon." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:oklch(0.15 0.013 10);
+    --card:oklch(0.205 0.016 10);
+    --card2:oklch(0.26 0.018 12);
+    --line:oklch(0.31 0.018 12);
+    --txt:oklch(0.97 0.006 40);
+    --mut:oklch(0.70 0.018 28);
+    --brand:oklch(0.67 0.205 12);
+    --brand-ink:oklch(0.74 0.19 14);   /* brand as text on dark */
+    --brand-2:oklch(0.76 0.15 48);      /* warm partner, CTA gradient only */
+    --ok:oklch(0.80 0.14 158);
+    --radius:20px;
+    --ease:cubic-bezier(0.16,1,0.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    background:var(--bg);color:var(--txt);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  body{display:flex;justify-content:center;min-height:100vh;min-height:100dvh;position:relative;overflow-x:hidden}
+  /* soft brand glow, top — depth without glass */
+  body::before{
+    content:"";position:fixed;top:-30%;left:50%;transform:translateX(-50%);
+    width:140%;height:60%;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at center,oklch(0.67 0.205 12 / 0.16),transparent 62%);
+  }
+  .app{position:relative;z-index:1;width:100%;max-width:460px;
+    padding:0 22px calc(40px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+
+  .screen{display:none;flex-direction:column;flex:1}
+  .screen.active{display:flex;animation:fade .5s var(--ease)}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* header */
+  .top{padding:30px 0 6px}
+  .logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:21px;letter-spacing:-.02em}
+  .logo span{color:var(--brand-ink)}
+
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+    font-size:clamp(33px,9.2vw,41px);line-height:1.04;letter-spacing:-.03em;margin-bottom:15px}
+  h1 em{font-style:normal;color:var(--brand-ink)}
+  h2{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;
+    font-size:28px;letter-spacing:-.02em;margin-bottom:7px}
+  .sub,.lead{color:var(--mut);font-size:16.5px}
+
+  /* HERO */
+  .hero{flex:1;display:flex;flex-direction:column;justify-content:center;padding:14px 0}
+  .sub{margin-bottom:26px;max-width:34ch}
+
+  /* iMessage-style thread */
+  .thread{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:15px 15px 17px;margin-bottom:28px}
+  .thread-head{display:flex;justify-content:space-between;align-items:center;
+    padding:0 2px 11px;margin-bottom:5px;border-bottom:1px solid var(--line)}
+  .thread-head .who{font-weight:600;font-size:13.5px}
+  .thread-head .when{color:var(--mut);font-size:11.5px}
+  .row{display:flex;margin:7px 0}
+  .row.me{justify-content:flex-end}
+  .bub{max-width:82%;padding:9px 14px;border-radius:18px;font-size:14.5px;line-height:1.38}
+  .bub.them{background:var(--card2);color:var(--txt);border-bottom-left-radius:6px}
+  .bub.me{background:var(--brand);color:oklch(0.99 0.01 20);font-weight:500;border-bottom-right-radius:6px}
+  .ghost{color:var(--mut);font-style:italic;text-align:center;font-size:12px;margin:11px 0 4px}
+  .suggest{animation:rise .7s var(--ease) .55s both}
+  .suggest-label{display:block;font-size:11px;font-weight:700;color:var(--brand-ink);
+    letter-spacing:.04em;text-transform:uppercase;margin:6px 2px 2px;text-align:right}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* buttons */
+  .btn{display:block;width:100%;border:none;cursor:pointer;border-radius:16px;
+    font-family:Inter,sans-serif;font-size:17px;font-weight:700;padding:18px;text-align:center;
+    color:oklch(0.99 0.01 20);background:linear-gradient(105deg,var(--brand),var(--brand-2));
+    box-shadow:0 12px 38px -10px oklch(0.67 0.205 12 / 0.65);
+    transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 18px 46px -10px oklch(0.67 0.205 12 / 0.7)}
+  .btn:active{transform:translateY(0) scale(.985)}
+  .btn.ghost{background:none;color:var(--mut);box-shadow:none;font-weight:600;font-size:15px;padding:13px}
+  .btn.ghost:hover{transform:none;color:var(--txt)}
+  .fine{color:var(--mut);font-size:12.5px;text-align:center;margin-top:13px}
+
+  /* PAYWALL */
+  .pw,.em{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 0}
+  .lead{margin-bottom:24px;max-width:36ch}
+  .tier{position:relative;display:flex;align-items:center;justify-content:space-between;
+    background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+    padding:17px 19px;margin-bottom:13px;cursor:pointer;
+    transition:border-color .2s var(--ease),transform .2s var(--ease)}
+  .tier:hover{transform:translateY(-2px)}
+  .tier:active{transform:translateY(0) scale(.99)}
+  .tier.best{border-color:var(--brand)}
+  .tier-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px}
+  .tier-meta{color:var(--mut);font-size:13px;margin-top:2px}
+  .tier-price{text-align:right;display:flex;align-items:baseline;gap:3px}
+  .tier-price .amt{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:19px}
+  .tier-price .per{color:var(--mut);font-size:12px}
+  .tier-badge{position:absolute;top:-11px;left:18px;background:var(--brand);
+    color:oklch(0.99 0.01 20);font-size:11px;font-weight:700;letter-spacing:.02em;
+    padding:3px 10px;border-radius:20px}
+  .trust{list-style:none;display:flex;flex-direction:column;gap:9px;margin:20px 0 8px}
+  .trust li{color:var(--mut);font-size:13.5px;padding-left:26px;position:relative}
+  .trust li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:800}
+
+  /* EMAIL */
+  .em input{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;
+    padding:17px;color:var(--txt);font-size:16px;font-family:Inter,sans-serif;margin:6px 0 12px;
+    transition:border-color .2s var(--ease)}
+  .em input::placeholder{color:var(--mut)}
+  .em input:focus{outline:none;border-color:var(--brand)}
+  .err{color:var(--brand-ink);font-size:13px;min-height:18px;margin-bottom:4px}
+
+  /* DONE */
+  .done{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding:24px 0}
+  .check{width:78px;height:78px;border-radius:50%;background:oklch(0.80 0.14 158 / 0.16);
+    color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:38px;
+    font-weight:800;margin-bottom:22px;animation:pop .55s var(--ease) both}
+  @keyframes pop{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+  .done .lead{max-width:32ch}
+  .back{margin-top:30px;background:none;border:none;cursor:pointer;
+    color:var(--mut);font-family:Inter,sans-serif;font-size:13.5px;transition:color .2s}
+  .back:hover{color:var(--txt)}
+
+  @media (prefers-reduced-motion:reduce){
+    .screen.active,.suggest,.check{animation:none}
+    .btn,.tier{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SCREEN 1: HERO ============ -->
+  <section id="s-hero" class="screen active">
+    <header class="top"><div class="logo">Rizz<span>Reply</span></div></header>
+    <div class="hero">
+      <h1>Paste the dead chat.<br><em>Get the reply that lands.</em></h1>
+      <p class="sub">Your AI dating wingman. Drop any conversation, get three replies that actually get a response, in seconds.</p>
+
+      <div class="thread">
+        <div class="thread-head"><span class="who">Match · Mia</span><span class="when">read 2d ago</span></div>
+        <div class="row"><div class="bub them">hey</div></div>
+        <div class="row"><div class="bub them">how's your week going</div></div>
+        <div class="ghost">you left her on read for 2 days 💀</div>
+        <div class="suggest">
+          <span class="suggest-label">RizzReply suggests</span>
+          <div class="row me"><div class="bub me">busy plotting world domination, the usual 😏 what's the most spontaneous thing you've done this week?</div></div>
+        </div>
+      </div>
+
+      <button class="btn" id="cta-hero">Start 3-day free trial</button>
+      <p class="fine">No hidden charges. No fake trials. Cancel in two taps.</p>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2: PAYWALL ============ -->
+  <section id="s-paywall" class="screen">
+    <header class="top"><div class="logo">Rizz<span>Reply</span></div></header>
+    <div class="pw">
+      <h2>Unlock unlimited replies</h2>
+      <p class="lead">Three days free. Then keep the rizz flowing.</p>
+
+      <div class="tier best" data-tier="annual">
+        <div class="tier-badge">3 days free</div>
+        <div>
+          <div class="tier-name">Yearly</div>
+          <div class="tier-meta">$39.99 a year, billed once</div>
+        </div>
+        <div class="tier-price"><span class="amt">$0.77</span><span class="per">/wk</span></div>
+      </div>
+
+      <div class="tier" data-tier="weekly">
+        <div>
+          <div class="tier-name">Weekly</div>
+          <div class="tier-meta">billed weekly</div>
+        </div>
+        <div class="tier-price"><span class="amt">$4.99</span><span class="per">/wk</span></div>
+      </div>
+
+      <ul class="trust">
+        <li>Three days free, we'll remind you before it ends</li>
+        <li>Cancel anytime in two taps, no questions</li>
+        <li>No charge today</li>
+      </ul>
+
+      <button class="btn ghost" id="cta-later">Maybe later</button>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3: EMAIL (honest waitlist) ============ -->
+  <section id="s-email" class="screen">
+    <header class="top"><div class="logo">Rizz<span>Reply</span></div></header>
+    <div class="em">
+      <h2>You're almost in</h2>
+      <p class="lead">RizzReply hits the App Store soon. Drop your email and we'll send you <b>early access at this founder price</b> the day we launch.</p>
+      <form id="signup-form">
+        <input type="email" id="email" placeholder="you@email.com" autocomplete="email" required />
+        <div class="err" id="err"></div>
+        <button class="btn" type="submit" id="cta-submit">Reserve my spot</button>
+      </form>
+      <p class="fine">We'll only email you about launch. No spam, ever.</p>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 4: DONE ============ -->
+  <section id="s-done" class="screen">
+    <div class="done">
+      <div class="check">✓</div>
+      <h2>You're on the list</h2>
+      <p class="lead">We'll email you the day RizzReply launches, with your founder-price early access. Keep an eye on your inbox.</p>
+      <button class="back" id="restart">Back to start</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     CONFIG
+     Formspree endpoint — collects waitlist emails.
+     GoatCounter — privacy analytics, counts funnel events (no ad account).
+     Dashboard: https://bielke.goatcounter.com
+============================================================ -->
+<script>
+  var FORMSPREE_ENDPOINT = "https://formspree.io/f/xjgdbkvz";
+</script>
+
+<!-- GoatCounter analytics (auto-counts pageview on load) -->
+<script data-goatcounter="https://bielke.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+<!-- Funnel logic + event tracking -->
+<script>
+  (function(){
+    var chosenTier = null;
+    // GoatCounter custom event. path = event name shown in dashboard.
+    function track(name){ try{ if(window.goatcounter && window.goatcounter.count) window.goatcounter.count({path:name, title:name, event:true}); }catch(e){} }
+    function show(id){
+      document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0,0);
+    }
+
+    // pageview auto-counts via count.js on load = CTR denominator.
+
+    // HERO → paywall  (CTR numerator)
+    document.getElementById('cta-hero').addEventListener('click', function(){
+      track('hero-click');     // CTR numerator
+      track('paywall-view');   // paid% denominator
+      show('s-paywall');
+    });
+
+    // TIER tap → email  (paid% numerator)
+    document.querySelectorAll('.tier').forEach(function(t){
+      t.addEventListener('click', function(){
+        chosenTier = t.getAttribute('data-tier');
+        track('tier-select');          // paid% numerator (aggregate)
+        track('tier-'+chosenTier);     // per-tier breakdown
+        show('s-email');
+      });
+    });
+
+    // "Maybe later" = paywall bounce (counts in paid% denominator, not numerator)
+    document.getElementById('cta-later').addEventListener('click', function(){
+      track('maybe-later');
+      show('s-hero');
+    });
+
+    // EMAIL submit → Formspree + signup event
+    document.getElementById('signup-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      var email = document.getElementById('email').value.trim();
+      var err = document.getElementById('err');
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='Enter a valid email.'; return; }
+      err.textContent='';
+      var btn = document.getElementById('cta-submit'); btn.textContent='Reserving…';
+
+      if(FORMSPREE_ENDPOINT.indexOf("__")===-1){
+        fetch(FORMSPREE_ENDPOINT, {
+          method:'POST',
+          headers:{'Accept':'application/json','Content-Type':'application/json'},
+          body: JSON.stringify({ email: email, tier: chosenTier, source:'tiktok_fakedoor', app:'rizzreply' })
+        }).then(function(){ finishSignup(email); })
+          .catch(function(){ finishSignup(email); }); // count the intent even if POST fails
+      } else {
+        finishSignup(email); // placeholder mode (local preview)
+      }
+
+      function finishSignup(em){
+        track('signup');   // backup signal; Formspree is the source of truth for emails
+        show('s-done');
+      }
+    });
+
+    document.getElementById('restart').addEventListener('click', function(){ show('s-hero'); });
+  })();
+</script>
+</body>
+</html>
