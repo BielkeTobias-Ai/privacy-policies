@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Driftly — Your perfect sleep mix, built by AI.</title>
+<meta name="description" content="Tell Driftly how you sleep. Get an 8-hour AI soundscape that never cuts out mid-night." />
+<!-- Open Graph (for the TikTok link-in-bio preview) -->
+<meta property="og:title" content="Driftly — Your perfect sleep mix, built by AI" />
+<meta property="og:description" content="An 8-hour soundscape tuned to you. Never stops mid-night. Launching on the App Store soon." />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:oklch(0.15 0.02 285);
+    --card:oklch(0.20 0.025 285);
+    --card2:oklch(0.25 0.03 287);
+    --line:oklch(0.30 0.03 287);
+    --txt:oklch(0.97 0.005 280);
+    --mut:oklch(0.70 0.02 285);
+    --brand:oklch(0.65 0.17 295);
+    --brand-ink:oklch(0.76 0.14 295);   /* brand as text on dark */
+    --brand-2:oklch(0.72 0.12 230);      /* cool blue partner, CTA gradient only */
+    --ok:oklch(0.80 0.14 158);
+    --radius:20px;
+    --ease:cubic-bezier(0.16,1,0.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    background:var(--bg);color:var(--txt);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  body{display:flex;justify-content:center;min-height:100vh;min-height:100dvh;position:relative;overflow-x:hidden}
+  /* soft brand glow, top — depth without glass */
+  body::before{
+    content:"";position:fixed;top:-30%;left:50%;transform:translateX(-50%);
+    width:140%;height:60%;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at center,oklch(0.65 0.17 295 / 0.16),transparent 62%);
+  }
+  .app{position:relative;z-index:1;width:100%;max-width:460px;
+    padding:0 22px calc(40px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+
+  .screen{display:none;flex-direction:column;flex:1}
+  .screen.active{display:flex;animation:fade .5s var(--ease)}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* header */
+  .top{padding:30px 0 6px}
+  .logo{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:21px;letter-spacing:-.02em}
+  .logo span{color:var(--brand-ink)}
+
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+    font-size:clamp(33px,9.2vw,41px);line-height:1.04;letter-spacing:-.03em;margin-bottom:15px}
+  h1 em{font-style:normal;color:var(--brand-ink)}
+  h2{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;
+    font-size:28px;letter-spacing:-.02em;margin-bottom:7px}
+  .sub,.lead{color:var(--mut);font-size:16.5px}
+
+  /* HERO */
+  .hero{flex:1;display:flex;flex-direction:column;justify-content:center;padding:14px 0}
+  .sub{margin-bottom:26px;max-width:34ch}
+
+  /* sound-mixer mockup */
+  .mixer{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:15px 15px 17px;margin-bottom:28px}
+  .mixer-head{display:flex;justify-content:space-between;align-items:center;
+    padding:0 2px 11px;margin-bottom:9px;border-bottom:1px solid var(--line)}
+  .mixer-head .who{font-weight:600;font-size:13.5px}
+  .mixer-head .when{color:var(--mut);font-size:11.5px}
+  .ch{display:flex;align-items:center;gap:12px;margin:11px 2px}
+  .ch .nm{flex:0 0 92px;font-size:13.5px;font-weight:500}
+  .ch .bar{flex:1;height:8px;border-radius:6px;background:var(--card2);position:relative;overflow:hidden}
+  .ch .bar i{position:absolute;inset:0 auto 0 0;border-radius:6px;
+    background:linear-gradient(90deg,var(--brand-2),var(--brand))}
+  .ch .pct{flex:0 0 36px;text-align:right;color:var(--mut);font-size:12px;font-variant-numeric:tabular-nums}
+  .suggest{animation:rise .7s var(--ease) .55s both}
+  .suggest-label{display:block;font-size:11px;font-weight:700;color:var(--brand-ink);
+    letter-spacing:.04em;text-transform:uppercase;margin:12px 2px 8px}
+  .playpill{display:flex;align-items:center;gap:10px;background:var(--card2);
+    border-radius:14px;padding:11px 14px}
+  .playpill .dot{width:34px;height:34px;border-radius:50%;flex:0 0 34px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px}
+  .playpill .t1{font-size:13.5px;font-weight:600}
+  .playpill .t2{color:var(--mut);font-size:11.5px}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* buttons */
+  .btn{display:block;width:100%;border:none;cursor:pointer;border-radius:16px;
+    font-family:Inter,sans-serif;font-size:17px;font-weight:700;padding:18px;text-align:center;
+    color:oklch(0.99 0.005 280);background:linear-gradient(105deg,var(--brand),var(--brand-2));
+    box-shadow:0 12px 38px -10px oklch(0.65 0.17 295 / 0.65);
+    transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 18px 46px -10px oklch(0.65 0.17 295 / 0.7)}
+  .btn:active{transform:translateY(0) scale(.985)}
+  .btn.ghost{background:none;color:var(--mut);box-shadow:none;font-weight:600;font-size:15px;padding:13px}
+  .btn.ghost:hover{transform:none;color:var(--txt)}
+  .fine{color:var(--mut);font-size:12.5px;text-align:center;margin-top:13px}
+
+  /* PAYWALL */
+  .pw,.em{flex:1;display:flex;flex-direction:column;justify-content:center;padding:20px 0}
+  .lead{margin-bottom:24px;max-width:36ch}
+  .tier{position:relative;display:flex;align-items:center;justify-content:space-between;
+    background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+    padding:17px 19px;margin-bottom:13px;cursor:pointer;
+    transition:border-color .2s var(--ease),transform .2s var(--ease)}
+  .tier:hover{transform:translateY(-2px)}
+  .tier:active{transform:translateY(0) scale(.99)}
+  .tier.best{border-color:var(--brand)}
+  .tier-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:17px}
+  .tier-meta{color:var(--mut);font-size:13px;margin-top:2px}
+  .tier-price{text-align:right;display:flex;align-items:baseline;gap:3px}
+  .tier-price .amt{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:19px}
+  .tier-price .per{color:var(--mut);font-size:12px}
+  .tier-badge{position:absolute;top:-11px;left:18px;background:var(--brand);
+    color:oklch(0.99 0.005 280);font-size:11px;font-weight:700;letter-spacing:.02em;
+    padding:3px 10px;border-radius:20px}
+  .trust{list-style:none;display:flex;flex-direction:column;gap:9px;margin:20px 0 8px}
+  .trust li{color:var(--mut);font-size:13.5px;padding-left:26px;position:relative}
+  .trust li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:800}
+
+  /* EMAIL */
+  .em input{width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:16px;
+    padding:17px;color:var(--txt);font-size:16px;font-family:Inter,sans-serif;margin:6px 0 12px;
+    transition:border-color .2s var(--ease)}
+  .em input::placeholder{color:var(--mut)}
+  .em input:focus{outline:none;border-color:var(--brand)}
+  .err{color:var(--brand-ink);font-size:13px;min-height:18px;margin-bottom:4px}
+
+  /* DONE */
+  .done{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding:24px 0}
+  .check{width:78px;height:78px;border-radius:50%;background:oklch(0.80 0.14 158 / 0.16);
+    color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:38px;
+    font-weight:800;margin-bottom:22px;animation:pop .55s var(--ease) both}
+  @keyframes pop{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+  .done .lead{max-width:32ch}
+  .back{margin-top:30px;background:none;border:none;cursor:pointer;
+    color:var(--mut);font-family:Inter,sans-serif;font-size:13.5px;transition:color .2s}
+  .back:hover{color:var(--txt)}
+
+  @media (prefers-reduced-motion:reduce){
+    .screen.active,.suggest,.check{animation:none}
+    .btn,.tier{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SCREEN 1: HERO ============ -->
+  <section id="s-hero" class="screen active">
+    <header class="top"><div class="logo">Drift<span>ly</span></div></header>
+    <div class="hero">
+      <h1>Your perfect sleep mix.<br><em>Built by AI in seconds.</em></h1>
+      <p class="sub">Tell Driftly how you sleep. It blends rain, thunder and noise into an 8-hour soundscape — and never cuts out mid-night.</p>
+
+      <div class="mixer">
+        <div class="mixer-head"><span class="who">Tonight's mix</span><span class="when">tuned for: light sleeper</span></div>
+        <div class="ch"><span class="nm">Soft rain</span><div class="bar"><i style="width:72%"></i></div><span class="pct">72%</span></div>
+        <div class="ch"><span class="nm">Far thunder</span><div class="bar"><i style="width:31%"></i></div><span class="pct">31%</span></div>
+        <div class="ch"><span class="nm">Brown noise</span><div class="bar"><i style="width:48%"></i></div><span class="pct">48%</span></div>
+        <div class="suggest">
+          <span class="suggest-label">Driftly mixed this for you</span>
+          <div class="playpill">
+            <div class="dot">▶</div>
+            <div>
+              <div class="t1">Rainy cabin, low rumble</div>
+              <div class="t2">8h continuous · fades out as you wake</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn" id="cta-hero">Start 3-day free trial</button>
+      <p class="fine">No hidden charges. No fake trials. Cancel in two taps.</p>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2: PAYWALL ============ -->
+  <section id="s-paywall" class="screen">
+    <header class="top"><div class="logo">Drift<span>ly</span></div></header>
+    <div class="pw">
+      <h2>Unlock unlimited mixes</h2>
+      <p class="lead">Three days free. Then sleep like this every night.</p>
+
+      <div class="tier best" data-tier="annual">
+        <div class="tier-badge">3 days free</div>
+        <div>
+          <div class="tier-name">Yearly</div>
+          <div class="tier-meta">$29.99 a year, billed once</div>
+        </div>
+        <div class="tier-price"><span class="amt">$0.58</span><span class="per">/wk</span></div>
+      </div>
+
+      <div class="tier" data-tier="weekly">
+        <div>
+          <div class="tier-name">Weekly</div>
+          <div class="tier-meta">billed weekly</div>
+        </div>
+        <div class="tier-price"><span class="amt">$3.99</span><span class="per">/wk</span></div>
+      </div>
+
+      <ul class="trust">
+        <li>Plays all night — never stops mid-sleep</li>
+        <li>Three days free, we'll remind you before it ends</li>
+        <li>Cancel anytime in two taps, no charge today</li>
+      </ul>
+
+      <button class="btn ghost" id="cta-later">Maybe later</button>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3: EMAIL (honest waitlist) ============ -->
+  <section id="s-email" class="screen">
+    <header class="top"><div class="logo">Drift<span>ly</span></div></header>
+    <div class="em">
+      <h2>You're almost in</h2>
+      <p class="lead">Driftly hits the App Store soon. Drop your email and we'll send you <b>early access at this founder price</b> the day we launch.</p>
+      <form id="signup-form">
+        <input type="email" id="email" placeholder="you@email.com" autocomplete="email" required />
+        <div class="err" id="err"></div>
+        <button class="btn" type="submit" id="cta-submit">Reserve my spot</button>
+      </form>
+      <p class="fine">We'll only email you about launch. No spam, ever.</p>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 4: DONE ============ -->
+  <section id="s-done" class="screen">
+    <div class="done">
+      <div class="check">✓</div>
+      <h2>You're on the list</h2>
+      <p class="lead">We'll email you the day Driftly launches, with your founder-price early access. Sleep tight.</p>
+      <button class="back" id="restart">Back to start</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============================================================
+     CONFIG
+     Formspree endpoint — same form as cycle-01; app field separates rows.
+     GoatCounter — same site as cycle-01; events PREFIXED "dl-" so the two
+     funnels never collide in the dashboard. Pageviews separate by path.
+     Dashboard: https://bielke.goatcounter.com
+============================================================ -->
+<script>
+  var FORMSPREE_ENDPOINT = "https://formspree.io/f/xjgdbkvz";
+</script>
+
+<!-- GoatCounter analytics (auto-counts pageview on load) -->
+<script data-goatcounter="https://bielke.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+
+<!-- Funnel logic + event tracking -->
+<script>
+  (function(){
+    var chosenTier = null;
+    // GoatCounter custom event. path = event name shown in dashboard.
+    function track(name){ try{ if(window.goatcounter && window.goatcounter.count) window.goatcounter.count({path:name, title:name, event:true}); }catch(e){} }
+    function show(id){
+      document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0,0);
+    }
+
+    // pageview auto-counts via count.js on load = CTR denominator (per path).
+
+    // HERO → paywall  (CTR numerator)
+    document.getElementById('cta-hero').addEventListener('click', function(){
+      track('dl-hero-click');     // CTR numerator
+      track('dl-paywall-view');   // paid% denominator
+      show('s-paywall');
+    });
+
+    // TIER tap → email  (paid% numerator)
+    document.querySelectorAll('.tier').forEach(function(t){
+      t.addEventListener('click', function(){
+        chosenTier = t.getAttribute('data-tier');
+        track('dl-tier-select');          // paid% numerator (aggregate)
+        track('dl-tier-'+chosenTier);     // per-tier breakdown
+        show('s-email');
+      });
+    });
+
+    // "Maybe later" = paywall bounce (counts in paid% denominator, not numerator)
+    document.getElementById('cta-later').addEventListener('click', function(){
+      track('dl-maybe-later');
+      show('s-hero');
+    });
+
+    // EMAIL submit → Formspree + signup event
+    document.getElementById('signup-form').addEventListener('submit', function(e){
+      e.preventDefault();
+      var email = document.getElementById('email').value.trim();
+      var err = document.getElementById('err');
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='Enter a valid email.'; return; }
+      err.textContent='';
+      var btn = document.getElementById('cta-submit'); btn.textContent='Reserving…';
+
+      if(FORMSPREE_ENDPOINT.indexOf("__")===-1){
+        fetch(FORMSPREE_ENDPOINT, {
+          method:'POST',
+          headers:{'Accept':'application/json','Content-Type':'application/json'},
+          body: JSON.stringify({ email: email, tier: chosenTier, source:'tiktok_fakedoor', app:'driftly' })
+        }).then(function(){ finishSignup(email); })
+          .catch(function(){ finishSignup(email); }); // count the intent even if POST fails
+      } else {
+        finishSignup(email); // placeholder mode (local preview)
+      }
+
+      function finishSignup(em){
+        track('dl-signup');   // backup signal; Formspree is the source of truth for emails
+        show('s-done');
+      }
+    });
+
+    document.getElementById('restart').addEventListener('click', function(){ show('s-hero'); });
+  })();
+</script>
+</body>
+</html>
